@@ -105,11 +105,11 @@ class FaceRecog():
         # video stream.
         ret, jpg = cv2.imencode('.jpg', frame)
         return jpg.tobytes()
-
+'''
 class WebCam():
     def __init__(self):
         self.classroom = 'N1_221'
-        self.lecture = {'CS101':'2020:01:06:13:00:00', 'CS122':'2020:01:06:00:00:00', 'CS201':'2020:01:07:15:00:00'}    
+        self.lecture = {'CS101':'2020:01:06:17:30:00', 'CS122':'2020:01:06:00:00:00', 'CS201':'2020:01:07:15:00:00'}    
 
     def get_difference(self, name):
         keys = list(self.lecture.keys())
@@ -121,36 +121,44 @@ class WebCam():
         values = list(self.lecture.values())
         time = datetime.now()
         for value in values:
+            value_att = value + datetime.timedelta(minutes = 90)
             print(value)
             print(time)
             print("---------------------------")
-            difference = (value-time).seconds / 60
+            difference = (value_att-time).seconds / 60
             print(difference)
-            if (difference < 30.0):
+            #if (difference )
+            if (difference < 50.0 and difference > 20.0):
                 val = value.strftime('%H:%M')
                 print(val)
                 col.update(
                 {"$and":[{'student_id': name}, {'lecture_start_time' : val}]}, 
                 {"$set": {'atd_check': 'Y'}}
                 )
-            else:
+            else if (difference <= 20.0):
+                val = value.strftime('%H:%M')
+                print(val)
+                col.update(
+                {"$and":[{'student_id': name}, {'lecture_start_time' : val}]}, 
+                {"$set": {'atd_check': 'L'}}
+                )
+            else:    
                 break      
-
-    
-
-
+'''
 if __name__ == '__main__':
     face_recog = FaceRecog()
     print(face_recog.known_face_names)
     #webcam_id = WebCam()
-    classroom = 'N1_221'
-    lecture = {'CS101':'2020:01:06:01:50:00', 'CS122':'2020:01:06:00:00:00', 'CS201':'2020:01:07:15:00:00'}
+    classroom = 'N1_112'
+    lecture = {'CS496':['2020:01:06:23:00:00', '2020:01:08:19:00:00'], 'CS122':['2020:01:07:00:00:00', '2020:01:08:00:00:00'], 'CS201':['2020:01:07:15:00:00', '2020:01:08:15:00:00']}
+    values = list(lecture.values())
 
-    keys = list(lecture.keys())
-    for key in keys:
-        result = lecture[key].split(':')
-        lecture_time_result = datetime(int(result[0]), int(result[1]), int(result[2]), int(result[3]), int(result[4]), int(result[5]))
-        lecture[key] = lecture_time_result
+    for i in range(len(values)):
+        for j in range(len(values[i])):
+            print(values[i][j])
+            result = values[i][j].split(':')
+            lecture_time_result = datetime(int(result[0]), int(result[1]), int(result[2]), int(result[3]), int(result[4]), int(result[5]))
+            values[i][j] = lecture_time_result
     values = list(lecture.values())
     time = datetime.now()
 
@@ -191,20 +199,43 @@ if __name__ == '__main__':
         for get in gets :
 
             for value in values:
-                print(value)
-                print(time)
-                print("---------------------------")
-                difference = (value-time).seconds / 60
-                print(difference)
-                if (difference < 30.0):
-                    val = value.strftime('%H:%M')
-                    print(val)
-                    col.update(
-                    {"$and":[{'student_id': get}, {'lecture_start_time' : val}]}, 
-                    {"$set": {'atd_check': 'N'}}
-                    )
-                else:
-                    break
+                for i in range(len(value)):
+                    #value_att = value[i] + timedelta(minutes = 90)
+                    print(value[i])
+                    print(time)
+                    print("---------------------------")
+                    difference = (value[i]-time).total_seconds() / 60
+                    print(difference)
+                    if (difference >= 110.0):
+                        val = value[i].strftime('%H:%M')
+                        print(val)
+                        col.update(
+                        {"$and":[{'student_id': get}, {'lecture_end_time' : val}, {'classroom':classroom}]}, 
+                        {"$set": {'atd_check': ''}}
+                        )
+                    elif (difference >= 80.0 and difference < 110.0):
+                        val = value[i].strftime('%H:%M')
+                        print(val)
+                        col.update(
+                        {"$and":[{'student_id': get}, {'lecture_end_time' : val}, {'classroom':classroom}]}, 
+                        {"$set": {'atd_check': 'Y'}}
+                        )
+                    elif (difference > 60.0 and difference < 80.0):
+                        val = value[i].strftime('%H:%M')
+                        print(val)
+                        col.update(
+                        {"$and":[{'student_id': get}, {'lecture_end_time' : val}, {'classroom':classroom}]}, 
+                        {"$set": {'atd_check': 'L'}}
+                        )
+                    elif (difference >= 0 and difference <= 60.0):
+                        val = value[i].strftime('%H:%M')
+                        print(val)
+                        col.update(
+                        {"$and":[{'student_id': get}, {'lecture_end_time' : val}, {'classroom':classroom}]}, 
+                        {"$set": {'atd_check': 'N'}}
+                        )
+                    elif (difference < 0):
+                        continue   
 
             #webcam_id.get_difference(get) 
 
