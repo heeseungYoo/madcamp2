@@ -150,7 +150,7 @@ if __name__ == '__main__':
     print(face_recog.known_face_names)
     #webcam_id = WebCam()
     classroom = 'N1_112'
-    lecture = {'CS496':['2020:01:06:23:00:00', '2020:01:08:19:00:00'], 'CS122':['2020:01:07:00:00:00', '2020:01:08:00:00:00'], 'CS201':['2020:01:07:15:00:00', '2020:01:08:15:00:00']}
+    lecture = {'CS496':['2020:01:06:23:30:00', '2020:01:08:19:00:00'], 'CS122':['2020:01:07:00:00:00', '2020:01:08:00:00:00'], 'CS201':['2020:01:07:15:00:00', '2020:01:08:15:00:00']}
     values = list(lecture.values())
 
     for i in range(len(values)):
@@ -217,24 +217,29 @@ if __name__ == '__main__':
                         val = value[i].strftime('%H:%M')
                         print(val)
                         col.update(
-                        {"$and":[{'student_id': get}, {'lecture_end_time' : val}, {'classroom':classroom}]}, 
+                        {"$and":[{'student_id': get}, {'lecture_end_time' : val}, {'classroom':classroom}, {'atd_check':''}]}, 
                         {"$set": {'atd_check': 'Y'}}
                         )
                     elif (difference > 60.0 and difference < 80.0):
                         val = value[i].strftime('%H:%M')
                         print(val)
                         col.update(
-                        {"$and":[{'student_id': get}, {'lecture_end_time' : val}, {'classroom':classroom}]}, 
+                        {"$and":[{'student_id': get}, {'lecture_end_time' : val}, {'classroom':classroom}, {'atd_check':''}]}, 
                         {"$set": {'atd_check': 'L'}}
                         )
                     elif (difference >= 0 and difference <= 60.0):
                         val = value[i].strftime('%H:%M')
                         print(val)
                         col.update(
-                        {"$and":[{'student_id': get}, {'lecture_end_time' : val}, {'classroom':classroom}]}, 
+                        {"$and":[{'student_id': get}, {'lecture_end_time' : val}, {'classroom':classroom}, {'atd_check':''}]}, 
                         {"$set": {'atd_check': 'N'}}
                         )
                     elif (difference < 0):
+                        val = value[i].strftime('%H:%M')
+                        col.update(
+                        {"$and":[{'student_id': get}, {'lecture_end_time' : val}, {'classroom':classroom}, {'atd_check':''}]}, 
+                        {"$set": {'atd_check': 'N'}}
+                        )
                         continue   
 
             #webcam_id.get_difference(get) 
@@ -250,6 +255,7 @@ if __name__ == '__main__':
 
         # if the `q` key was pressed, break from the loop
         if key == ord("q"):
+            server.stop()
             break
 
     # do a bit of cleanup
